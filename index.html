@@ -1,183 +1,60 @@
-package com.infy.service.test;
+<section id="loginPage" class="loginSection" *ngIf="!register">
+  <div class="row">
+      <div class="col-md-4 offset-4 ">
+          <h1>Login</h1>
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-import static org.mockito.ArgumentMatchers.any;
+          <form [formGroup]="loginForm" (ngSubmit)="login()" class="form">
+              <div class="form-group">
+                  <label>Contact Number<span class="text-danger">*</span></label>        
+                  <input type="number" formControlName="contactNumber" id="contactNumber" class="form-control"> 
+                  <span class="error-message" *ngIf="loginForm.get('contactNumber').invalid && loginForm.get('contactNumber').touched" class="text-danger">Enter the valid registered number</span>
+              </div>
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-import com.infy.dao.UserDAO;
-import com.infy.model.Users;
-import com.infy.service.UserServiceImpl;
+              <div class="form-group">
+                  <label>Password<span class="text-danger">*</span></label>        
+                  <input type="password" formControlName="password" id="uPass"class="form-control"> 
+                  <span class="error-message" *ngIf="loginForm.get('password').invalid && loginForm.get('password').touched" class="text-danger">Enter a valid password</span>
+                  <br>
+                 
+              </div>
+               <!-- added a div class & anchor tag to show the Forgot password in login form -->
+               <div class="form-group">
+                   <a class="text-center" (click)="getitenary()">Forgot password?</a>
+                </div>
+              <span><span class="text-danger">*</span> marked fields are mandatory</span>
+              <br>
+              <div class="form-group">
+                  <div *ngIf="errorMessage!=null" class="text-danger">
+                      <h6>{{errorMessage}}</h6>
+                  </div>
+              </div>
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-public class UserServiceTest {
-	
-	@Mock 
-	UserDAO userDAO;
-	
-	@InjectMocks
-	UserServiceImpl serviceImpl;
-	
-	
-	@Rule
-	public ExpectedException  ee = ExpectedException.none();	
-	
-	@Test
-	public void invalidLoginInvalidUser()throws Exception{
-		ee.expect(Exception.class);
-		ee.expectMessage("UserService.INVALID_CREDENTIALS");
-		Users users = null;
-		when(userDAO.getUserByContactNumber(anyString())).thenReturn(users);
-		serviceImpl.authenticateUser("8889765465", "Scott@123");
-	}
-	
-	@Test
-	public void invalidLoginNullPassword()throws Exception{
-		ee.expect(Exception.class);
-		ee.expectMessage("UserService.INVALID_CREDENTIALS");
-		Users users = new Users();
-		users.setPassword(null);
-		when(userDAO.getUserByContactNumber(anyString())).thenReturn(users);
-		serviceImpl.authenticateUser("8889765465", "Scott@123");
-	}
-	
-	@Test
-	public void invalidLoginInvalidPassword()throws Exception{
-		ee.expect(Exception.class);
-		ee.expectMessage("UserService.INVALID_CREDENTIALS");
-		Users users = new Users();
-		users.setPassword("abc");
-		when(userDAO.getUserByContactNumber(anyString())).thenReturn(users);
-		serviceImpl.authenticateUser("8889765465", "Scott@123");
-	}
-	
-	@Test
-	public void validLogin()throws Exception{
-		Users expected = new Users();
-		expected.setPassword("3284cbd43ac6fc733d7c3d2176e7a52bbaeba81471702ec332a0a65689cf16e3");
-		expected.setContactNumber("8884967823");
-		when(userDAO.getUserByContactNumber(anyString())).thenReturn(expected);
-		Users actual=serviceImpl.authenticateUser("8889765465", "Scott@123");
-		Assert.assertEquals(expected.getContactNumber(), actual.getContactNumber());
-	}
-	
-	@Test
-	public void invalidRegister()throws Exception{
-		ee.expect(Exception.class);
-		ee.expectMessage("UserService.CONTACT_NUMBER_ALREADY_EXISTS");
-		Users expected = new Users();
-		expected.setContactNumber("8884967823");
-		when(userDAO.getUserByContactNumber(anyString())).thenReturn(expected);
-		Users actual = new Users();
-		actual.setContactNumber("8884967823");
-		actual.setPassword("Scott@123");
-		actual.setUserName("Scott");
-		actual.setEmailId("scott@stark.com");
-		serviceImpl.registerUser(actual);
-	}
-	
-	@Test
-	public void validRegister()throws Exception{
-		Users actual = new Users();
-		actual.setContactNumber("8884563253");
-		actual.setPassword("Scott@123");
-		actual.setUserName("Scott");
-		actual.setEmailId("scott@stark.com");
-		String expected = "Scott";
-		when(userDAO.registerUser(any())).thenReturn(expected);
-		Assert.assertEquals(expected, serviceImpl.registerUser(actual));
-	}
-
-	@Test
-	public void validauthenticateNumber() throws Exception{
-		Users actual = new Users();
-		actual.setContactNumber("8884563253");
-		actual.setUserName("Scott");
-		when(userDAO.getUserByContactNumber(anyString())).thenReturn(actual);
-		String expected=serviceImpl.authenticateNumber("8889765465");
-		Assert.assertEquals(expected, actual.getUserName());
-	}
-	@Test
-	public void invalidauthenticateNumber()throws Exception{
-		ee.expect(Exception.class);
-		ee.expectMessage("UserService.INVALID_CONTACT");
-		Users expected =new Users();
-		expected=null;
-		when(userDAO.getUserByContactNumber(anyString())).thenReturn(expected);
-		serviceImpl.authenticateNumber("6547891236");
-		}
-	public void invalidFormatOfNumber()throws Exception{
-		ee.expect(Exception.class);
-		ee.expectMessage("UserService.INVALID_CONTACT_NUMBER_FORMAT");
-		Users expected =new Users();
-		expected.setContactNumber("888497823259");
-		when(userDAO.getUserByContactNumber(anyString())).thenReturn(expected);
-		Users actual = new Users();
-		expected.setContactNumber("888456325325");
-		serviceImpl.authenticateNumber(actual.getContactNumber());
-	}
-	
-	@Test
-	public void validUpdatePassword() throws Exception{
-		Integer expected=1;
-		when(userDAO.updatePasswordOfUser(anyString(),anyString())).thenReturn(expected);
-		Integer actual=serviceImpl.updatePasswordOfUser("8889765465","Scott@123");
-		Assert.assertEquals(actual,expected);
-	}
-   @Test
-   public void invalidNumberFormatUpdatePassword()throws Exception{
-	   ee.expect (Exception.class);
-	   ee.expectMessage("UserValidator.INVALID_CONTACT_NUMBER_FORMAT");
-	   Integer expected=1;
-	   when(userDAO.updatePasswordOfUser(anyString(),anyString())).thenReturn(expected);
-	   Users actual = new Users();
-		actual.setContactNumber("1234567890");
-		actual.setPassword("Abc@123");
-		serviceImpl.updatePasswordOfUser("1234567890","Abc@123");
-	   
-   }
-	@Test
-	public void invalidPasswordFormatUpdatePassword() throws Exception{
-		 ee.expect (Exception.class);
-		 ee.expectMessage("UserValidator.INVALID_PASSWORD_FORMAT");
-		 Integer expected=1;
-		  when(userDAO.updatePasswordOfUser(anyString(),anyString())).thenReturn(expected);
-		   Users actual = new Users();
-			actual.setContactNumber("9874561230");
-			actual.setPassword("abc123");
-			serviceImpl.updatePasswordOfUser(actual.getContactNumber(),actual.getPassword());
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-}
+              <button type="submit" [disabled]="loginForm.invalid" class="btn btn-primary">Login</button>   
+          </form>
+          <br>
+          <!--can be a button or a link based on need -->
+          <button class="btn btn-primary" (click)="getRegisterPage()">Click here to Register</button>
+      </div>
+    </div>
+    <p-dialog header="Reset Password" *ngIf="showItenary" [(visible)]="showItenary" 
+    [modal]="true" [responsive]="true" 
+    [maximizable]="true" [baseZIndex]="10000" width="750" class="dialog-box">
+     <input class ="form-control" type="text" placeholder="Enter Registered Number" #contactnum>
+     <span class="text-danger" *ngIf="!contactVal">{{errorMessage2}}</span>
+     <span class="text-success" *ngIf="contactVal">Number Validated Successfully</span>  
+     <br><br>
+     <button class="btn btn-primary" (click)="getContact(contactnum.value)">VALIDATE PHONE NUMBER</button><br><br>
+     <div *ngIf="contactVal">
+         <label style="font-family:cambria;" for="newPassword"><b>Enter new password</b></label><br>
+         <input class="form-control" type="password" id="newPassword"  #newPassword><br>
+         <label style="font-family:cambria; "for="rePassword"><b>Re-Enter new password & press Enter</b></label><br>
+         <input class ="form-control" type="password" id="rePassword" #rePassword>
+         <span class="text-danger" *ngIf="mismatch">Password didn't match.</span><br>
+         <button class="btn btn-primary" 
+         (click)="updatePassword(newPassword.value,rePassword.value,contactnum.value)">CHANGE PASSWORD</button><br>
+         <span class="text-danger" *ngIf="passwordSyntax">{{errorMessage3}}</span>
+         <span class="text-success" *ngIf="passwordUpdated">Password has been changed successfully. Dear{{username}}
+ please login to continue.</span><br>
+             </div>
+    </p-dialog>
+</section>
