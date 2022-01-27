@@ -1,37 +1,183 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Startup</title>
-      <meta charset="utf-8">
-       <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+package com.infy.service.test;
 
-       <!-- Google Fonts -->
-       <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+import static org.mockito.ArgumentMatchers.any;
 
-       <!-- Bootstrap CSS from a CDN. This way you don't have to include the bootstrap file yourself -->
-      
-      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    
-    <!-- Your own stylesheet -->
-      <link rel="stylesheet" type="text/css" href="style.css">
-      <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+import com.infy.dao.UserDAO;
+import com.infy.model.Users;
+import com.infy.service.UserServiceImpl;
 
- </head>
-  <body>
-    <div  class="container d-flex align-items-center h-100">
-      <div class="row">
-        <header class="text-center col-12">
-          <h1 ><strong>THE</strong> BIGGEST STARTUP OF THE YEAR</h1>
-        </header>
-          <div class="buffer col-12"></div>
-          <section class="text-center col-12">
-            <hr>
-            <a href="https://believe007.github.io/start/">
-              <button class="btn btn-primary btn-xl">Find for more</button>
-            </a>
-          </section>
-      </div>
-     </div>
-  </body>
-</html>
-        
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class UserServiceTest {
+	
+	@Mock 
+	UserDAO userDAO;
+	
+	@InjectMocks
+	UserServiceImpl serviceImpl;
+	
+	
+	@Rule
+	public ExpectedException  ee = ExpectedException.none();	
+	
+	@Test
+	public void invalidLoginInvalidUser()throws Exception{
+		ee.expect(Exception.class);
+		ee.expectMessage("UserService.INVALID_CREDENTIALS");
+		Users users = null;
+		when(userDAO.getUserByContactNumber(anyString())).thenReturn(users);
+		serviceImpl.authenticateUser("8889765465", "Scott@123");
+	}
+	
+	@Test
+	public void invalidLoginNullPassword()throws Exception{
+		ee.expect(Exception.class);
+		ee.expectMessage("UserService.INVALID_CREDENTIALS");
+		Users users = new Users();
+		users.setPassword(null);
+		when(userDAO.getUserByContactNumber(anyString())).thenReturn(users);
+		serviceImpl.authenticateUser("8889765465", "Scott@123");
+	}
+	
+	@Test
+	public void invalidLoginInvalidPassword()throws Exception{
+		ee.expect(Exception.class);
+		ee.expectMessage("UserService.INVALID_CREDENTIALS");
+		Users users = new Users();
+		users.setPassword("abc");
+		when(userDAO.getUserByContactNumber(anyString())).thenReturn(users);
+		serviceImpl.authenticateUser("8889765465", "Scott@123");
+	}
+	
+	@Test
+	public void validLogin()throws Exception{
+		Users expected = new Users();
+		expected.setPassword("3284cbd43ac6fc733d7c3d2176e7a52bbaeba81471702ec332a0a65689cf16e3");
+		expected.setContactNumber("8884967823");
+		when(userDAO.getUserByContactNumber(anyString())).thenReturn(expected);
+		Users actual=serviceImpl.authenticateUser("8889765465", "Scott@123");
+		Assert.assertEquals(expected.getContactNumber(), actual.getContactNumber());
+	}
+	
+	@Test
+	public void invalidRegister()throws Exception{
+		ee.expect(Exception.class);
+		ee.expectMessage("UserService.CONTACT_NUMBER_ALREADY_EXISTS");
+		Users expected = new Users();
+		expected.setContactNumber("8884967823");
+		when(userDAO.getUserByContactNumber(anyString())).thenReturn(expected);
+		Users actual = new Users();
+		actual.setContactNumber("8884967823");
+		actual.setPassword("Scott@123");
+		actual.setUserName("Scott");
+		actual.setEmailId("scott@stark.com");
+		serviceImpl.registerUser(actual);
+	}
+	
+	@Test
+	public void validRegister()throws Exception{
+		Users actual = new Users();
+		actual.setContactNumber("8884563253");
+		actual.setPassword("Scott@123");
+		actual.setUserName("Scott");
+		actual.setEmailId("scott@stark.com");
+		String expected = "Scott";
+		when(userDAO.registerUser(any())).thenReturn(expected);
+		Assert.assertEquals(expected, serviceImpl.registerUser(actual));
+	}
+
+	@Test
+	public void validauthenticateNumber() throws Exception{
+		Users actual = new Users();
+		actual.setContactNumber("8884563253");
+		actual.setUserName("Scott");
+		when(userDAO.getUserByContactNumber(anyString())).thenReturn(actual);
+		String expected=serviceImpl.authenticateNumber("8889765465");
+		Assert.assertEquals(expected, actual.getUserName());
+	}
+	@Test
+	public void invalidauthenticateNumber()throws Exception{
+		ee.expect(Exception.class);
+		ee.expectMessage("UserService.INVALID_CONTACT");
+		Users expected =new Users();
+		expected=null;
+		when(userDAO.getUserByContactNumber(anyString())).thenReturn(expected);
+		serviceImpl.authenticateNumber("6547891236");
+		}
+	public void invalidFormatOfNumber()throws Exception{
+		ee.expect(Exception.class);
+		ee.expectMessage("UserService.INVALID_CONTACT_NUMBER_FORMAT");
+		Users expected =new Users();
+		expected.setContactNumber("888497823259");
+		when(userDAO.getUserByContactNumber(anyString())).thenReturn(expected);
+		Users actual = new Users();
+		expected.setContactNumber("888456325325");
+		serviceImpl.authenticateNumber(actual.getContactNumber());
+	}
+	
+	@Test
+	public void validUpdatePassword() throws Exception{
+		Integer expected=1;
+		when(userDAO.updatePasswordOfUser(anyString(),anyString())).thenReturn(expected);
+		Integer actual=serviceImpl.updatePasswordOfUser("8889765465","Scott@123");
+		Assert.assertEquals(actual,expected);
+	}
+   @Test
+   public void invalidNumberFormatUpdatePassword()throws Exception{
+	   ee.expect (Exception.class);
+	   ee.expectMessage("UserValidator.INVALID_CONTACT_NUMBER_FORMAT");
+	   Integer expected=1;
+	   when(userDAO.updatePasswordOfUser(anyString(),anyString())).thenReturn(expected);
+	   Users actual = new Users();
+		actual.setContactNumber("1234567890");
+		actual.setPassword("Abc@123");
+		serviceImpl.updatePasswordOfUser("1234567890","Abc@123");
+	   
+   }
+	@Test
+	public void invalidPasswordFormatUpdatePassword() throws Exception{
+		 ee.expect (Exception.class);
+		 ee.expectMessage("UserValidator.INVALID_PASSWORD_FORMAT");
+		 Integer expected=1;
+		  when(userDAO.updatePasswordOfUser(anyString(),anyString())).thenReturn(expected);
+		   Users actual = new Users();
+			actual.setContactNumber("9874561230");
+			actual.setPassword("abc123");
+			serviceImpl.updatePasswordOfUser(actual.getContactNumber(),actual.getPassword());
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+}
