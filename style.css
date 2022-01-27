@@ -1,48 +1,112 @@
-*{
-	margin:0px;
-	padding:0px;
-}
-body,
-html {
-  width: 100%;
-  height: 100%;
-  font-family: 'Montserrat', sans-serif;
-  background: url(back.png) no-repeat center center fixed; 
-  background-size: cover;
-}
-h1{
- 	font-size:3em;
-	color:#ffffff;
-	border-radius:25px ;
-	border-color: rgba(26,0,0,0.5);
-	background-color: rgba(130,0,0,0.5);
-}
-strong{
-	color: red;
-}
-hr{
-	border-color:white;
-	border-width: 3px;
+@Override
+	public String authenticateNumber(String contactNumber) throws Exception {
+//Function to validate the contactNumber
 		
+		if(!UserValidator.validateContactNumber(contactNumber)) {
+			throw new Exception("UserValidator.INVALID_CONTACT_NUMBER_FORMAT");
+		}
+		Users userFromDB = userDAO.getUserByContactNumber(contactNumber);
+		if (userFromDB == null)
+			throw new Exception("UserService.INVALID_CONTACT");
+		return userFromDB.getUserName();
+
 }
-.buffer{
-	height:2rem;
-}
-.btn{
-	font-weight:700;
-	border:0px;
-	border-radius:100px;
-}
-.btn-xl{
-	padding:10px 10px;
-	font-size:15px;
- 		text-transform: uppercase;
-}
-.btn-primary{
-	background-color: #ff0000;
+	@Override
+	public Integer updatePasswordOfUser(String contactNumber, String password) throws Exception
+	{
+		//Function to update the contactNumber
+		if(!UserValidator.validateContactNumber(contactNumber)) {
+			throw new Exception("UserValidator.INVALID_CONTACT_NUMBER_FORMAT");
+		}
+		else if (!UserValidator.validatePassword(password)) {
+			throw new Exception("UserValidator.INVALID_PASSWORD_FORMAT");
+		}
+		String hashPassword = HashingUtility.getHashValue(password);
+		return userDAO.updatePasswordOfUser(contactNumber, hashPassword);
+	}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+package com.infy.api;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.infy.model.Users;
+import com.infy.service.UserService;
+
+@CrossOrigin
+@RestController
+@RequestMapping("UserAPI")
+public class UserAPI {
+
+	@Autowired
+	private UserService userService;
+
+	@Autowired
+	private Environment environment;
+
+	@RequestMapping(value = "/userLogin", method = RequestMethod.POST)
+	public ResponseEntity<Users> authenticateUser(@RequestBody Users user) {
+
+		try {
+			Users userFromDB = userService.authenticateUser(user.getContactNumber(), user.getPassword());
+			return new ResponseEntity<Users>(userFromDB, HttpStatus.OK);
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, environment.getProperty(e.getMessage()));
+		}
+	}
+
+	@RequestMapping(value = "/userRegister", method = RequestMethod.POST)
+	public ResponseEntity<String> registerUser(@RequestBody Users user) {
+
+		try {
+			String userName = userService.registerUser(user);
+			String successMessage = environment.getProperty("UserAPI.REGISTER_USER_SUCCESS1") + userName
+					+ environment.getProperty("UserAPI.REGISTER_USER_SUCCESS2");
+			return new ResponseEntity<String>(successMessage, HttpStatus.OK);
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, environment.getProperty(e.getMessage()));
+		}
+	}
 	
+	@RequestMapping(value = "/userValidate", method = RequestMethod.POST)
+	public ResponseEntity<String> authenticateNumber(@RequestBody String contactNumber) {
+		//Function to validate the contactNumber using POST method
+		try {
+			String userName = userService.authenticateNumber(contactNumber);
+			return new ResponseEntity<String>(userName, HttpStatus.OK);
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, environment.getProperty(e.getMessage()));
+		}
+	}
+	
+	@RequestMapping(value = "/userUpdate/{contactno}", method = RequestMethod.PUT)
+	public ResponseEntity<Integer> updatePassword(@PathVariable String contactno, @RequestBody String password) {
+		//Function to update the contactNumber using PUT method
+		try {
+			Integer updateNum=userService.updatePasswordOfUser(contactno, password);
+			return new ResponseEntity<Integer>(updateNum, HttpStatus.OK);
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, environment.getProperty(e.getMessage()));
+		}
+	}
+
 }
-.btn-primary:hover{
-	background-color:#1bc8f1;
-	border-width: 1px;
-}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
