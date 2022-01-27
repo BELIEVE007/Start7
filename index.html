@@ -1,220 +1,184 @@
-<section id="loginPage" class="loginSection" *ngIf="!register">
-    <div class="row">
-        <div class="col-md-4 offset-4 ">
-            <h1>Login</h1>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.6.2</version>
+		<relativePath /> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.infy</groupId>
+	<artifactId>Wanderlust_ServerSide</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>Wanderlust_ServerSide</name>
+	<description>Server Side project for Wanderlust</description>
 
-            <form [formGroup]="loginForm" (ngSubmit)="login()" class="form">
-                <div class="form-group">
-                    <label>Contact Number<span class="text-danger">*</span></label>
-                    <input type="number" formControlName="contactNumber" id="contactNumber" class="form-control">
-                    <span class="error-message"
-                        *ngIf="loginForm.get('contactNumber').invalid && loginForm.get('contactNumber').touched"
-                        class="text-danger">Enter the valid registered number</span>
-                </div>
+		<properties>
+		<java.version>11</java.version>
+		<log4j2.version>2.17.1</log4j2.version>
+	</properties>
 
-                <div class="form-group">
-                    <label>Password<span class="text-danger">*</span></label>
-                    <input type="password" formControlName="password" id="uPass" class="form-control">
-                    <span class="error-message"
-                        *ngIf="loginForm.get('password').invalid && loginForm.get('password').touched"
-                        class="text-danger">Enter a valid password</span>
-                    <br>
-                </div>
-                <!-- forgot password link added -->
-                <div class="form-group">
-                    <a class="text-center" (click)="getitenary()">Forgot Password?</a>
-                </div>
-                <span><span class="text-danger">*</span> marked fields are mandatory</span>
-                <br>
-                <div class="form-group">
-                    <div *ngIf="errorMessage!=null" class="text-danger">
-                        <h6>{{errorMessage}}</h6>
-                    </div>
-                </div>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
 
-                <button type="submit" [disabled]="loginForm.invalid" class="btn btn-primary">Login</button>
-            </form>
-            <br>
-            <!--can be a button or a link based on need -->
-            <button class="btn btn-primary" (click)="getRegisterPage()">Click here to Register</button>
-        </div>
-    </div>
-    <!-- Created dialog box to reset password -->
-    <p-dialog header="Reset Password" *ngIf="showItenary" [(visible)]="showItenary" [modal]="true" [responsive]="true"
-        [maximizable]="true" [baseZIndex]="10000" width="750" class="dialog-box">
-        <input class="form-control" type="text" placeholder="Enter Registered Number" #contactnum>
-        <span class="text-danger" *ngIf="!contactVal">{{errorMessage2}}</span>
-        <span class="text-success" *ngIf="contactVal">Number Validated Successfully</span>
-        <br><br>
-        <button class="btn btn-primary" (click)="getContact(contactnum.value)"> VALIDATE PHONE NUMBER</button><br><br>
-        <div *ngIf="contactVal">
-            <label style="font-family: cambria ;" for="newPassword"><b>Enter new password</b></label><br>
-            <input class="form-control" type="password" id="newPassword" #newPassword><br>
-            <label style="font-family: cambria ;" for="rePassword"><b>Re-Enter new password and press
-                    Enter</b></label><br>
-            <input class="form-control" type="password" id="rePassword" #rePassword>
-            <span class="text-danger" *ngIf="mismatch">Passwords didn't match.</span><br>
-            <button class="btn btn-primary" 
-                (click)="updatePassword(newPassword.value,rePassword.value,contactnum.value)">CHANGE PASSWORD</button><br>
-            <span class="text-danger" *ngIf="passwordSyntax">{{errorMessage3}}</span>
-            <span class="text-success" *ngIf="passwordUpdated">Password has been changed successfully. Dear {{username}}
-                please login to continue.</span><br>
-        </div>
-    </p-dialog>
-</section>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.junit.vintage</groupId>
+					<artifactId>junit-vintage-engine</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 
-,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-runner</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>8.0.11</version><!--$NO-MVN-MAN-VER$ -->
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
 
 
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<!-- <version>2.1.4.RELEASE</version> -->
+		</dependency>
+	</dependencies>
 
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
 
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import { AuthService } from '../core/auth.service';
-import { LoginService } from '../service/login.service';
-import { Users } from '../models/User';
+			<!-- Code Coverage Plugin -->
+			
+			
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.6</version> 
+				<!-- <version>${jacoco.version}</version> -->
+				<configuration>
+					<excludes>
+						<exclude>com/infy/api/**</exclude>
+						<exclude>com/infy/utility/**</exclude>
+						<exclude>com/infy/model/**</exclude>
+						<exclude>com/infy/entity/**</exclude>
+						<exclude>com/infy/exception/**</exclude>
+						<exclude>com/infy/repository/**</exclude>
+						<exclude>com/infy/WanderlustServerSideApplication*</exclude>
+					</excludes>
+					<classFolders>
+						<classFolder>${basedir}/target/classes</classFolder>
+						<classFolder>${basedir}/../service/target/classes</classFolder>
 
-@Component({
-  selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
-})
-export class LoginComponent implements OnInit {
-  registerPage: Boolean = false;
-  loginForm: FormGroup;
+					</classFolders>
+					<sourceFolders>
+						<sourceFolder>${basedir}/src/main/java</sourceFolder>
+						<sourceFolder>${basedir}/../service/src/main/java</sourceFolder>
+					</sourceFolders>
+					<systemPropertyVariables>
+						<jacoco-agent.destfile>target/jacoco.exec</jacoco-agent.destfile>
+					</systemPropertyVariables>
+				</configuration>
+				<executions>
+					<execution>
+						<id>prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>coverage-check</id>
 
-  contactVal: boolean
-  mismatch:boolean=false
-  passwordUpdated: boolean=false
-  passwordSyntax: boolean=false
-  showItenary: boolean = false
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<rule>
+									<element>CLASS</element>
+									<limits>
+										<limit>
+											<counter>LINE</counter>
+											<!-- <counter>INSTRUCTION</counter> -->
+											<value>COVEREDRATIO</value>
+											<minimum>0.8</minimum>
+										</limit>
+									</limits>
+								</rule>
+							</rules>
+						</configuration>
+					</execution>
+					<execution>
+						<id>post-unit-test</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
 
-  errorMessage: string;
-  errorMessage2: string;
-  errorMessage3: string;
+							<!-- Sets the path to the file which contains the execution data. -->
+							<dataFile>target/jacoco.exec</dataFile>
+							<!-- Sets the output directory for the code coverage report. -->
+							<outputDirectory>target/jacoco-ut</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
 
-  
-  user: Users = new Users();
-  
-  
-  newPassword: string
-  rePassword: string
-  username: string
-  
-  constructor(private fb: FormBuilder, private router: Router, private auth: AuthService, private loginservice: LoginService) { }
+			<!-- PMD plugin -->
 
-  ngOnInit() {
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-pmd-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<excludes>
+					</excludes>
+					<rulesets>
+						<ruleset>${project.basedir}/RuleSet2015.xml</ruleset>
+					</rulesets>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
 
-    this.loginForm = this.fb.group({
-      contactNumber: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
-      password: ['', [Validators.required]]
-    })
-  }
-  login() {
-    this.loginservice.login(this.loginForm.value).subscribe(
-      (response) => {
-        this.errorMessage = null;
-        this.user = response;
-        this.auth.nextUser(this.user);
-        this.router.navigate(['/home'])
-
-      },
-      (errorResponse) => {
-        //error message if invalid contact number or password
-        this.errorMessage = errorResponse.error.message;
-        sessionStorage.clear();
-      }
-    );
-  }
-  getitenary() {
-    //opens iternary if forgot password
-    this.showItenary = true
-  }
-
-  getContact(contactnum:string) {
-    //Function to validate contact number
-    this.loginservice.contact(contactnum).subscribe(
-      (response) => {
-        this.errorMessage2 = null;
-        this.username = response;
-        this.auth.nextUser(this.user);
-        this.contactVal = true
-
-      },
-      (errorResponse) => {
-        //error message if invalid contact number 
-        this.errorMessage2 =  JSON.parse(errorResponse.error).message;
-        sessionStorage.clear();
-        this.contactVal = false
-      }
-    )
-
-  }
-  updatePassword(newPassword:string,rePassword:string,contactno: string) {
-    //Function to update contact number
-    if(newPassword!=null && rePassword!=null  && newPassword==rePassword )
-    {
-    this.mismatch=false
-    this.loginservice.update(contactno, newPassword).subscribe(
-      (response) => {
-        this.errorMessage3 = null;
-        this.auth.nextUser(this.user);
-        this.passwordUpdated = true
-        
-      },
-      (errorResponse) => {
-        //error message if invalid contact number 
-        this.errorMessage3 = errorResponse.error.message;
-        sessionStorage.clear(); 
-        this.passwordSyntax = true
-        
-      }
-    )}
-    else{
-      this.mismatch = true
-      this.passwordUpdated=false
-      this.passwordSyntax = false
-    }
-  }
-  getRegisterPage() {
-    this.registerPage = true;
-    //open register page if the user is not registered already
-    this.router.navigate(['/', 'register']);
-  }
-
-}
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-
-import { HttpClient, HttpEvent } from '@angular/common/http';
-
-
-
-import { environment } from '../../environments/environment';
-import { Users } from '../models/User';
-import { AuthService } from '../core/auth.service';
-
-@Injectable({
-  providedIn: 'root'
-})
-export class LoginService {
-
-  constructor(private http: HttpClient) {
-
-  }
-  login(data: any): Observable<Users> {
-    return <Observable<Users>>this.http.post<Users>(environment.loginUri, data);
-      
-  }
-  contact(data: any): Observable<string> {
-    return this.http.post(environment.contactUri, data,{responseType:"text"});   
-  }
-  
-  update(contactno: String,upassword: String): Observable<Users> {
-    return <Observable<Users>>this.http.put<Users>(environment.updateUri+'/'+contactno, upassword);
-      
-  }
-}
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.19</version>
+				<configuration>
+					<failIfNoTests>true</failIfNoTests>
+					<testFailureIgnore>true</testFailureIgnore>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
